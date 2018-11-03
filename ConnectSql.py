@@ -1,11 +1,15 @@
 import pymssql
-
+import time
 # server    数据库服务器名称或IP
 # user      用户名
 # password  密码
 # database  数据库名称
+ServerName ="sa"
+password_ = "123456"
+ServerDomain="127.0.0.1"
+port_ = 1433
 def ConnectSql():
-    conn = pymssql.connect("127.0.0.1", "sa", "123456", "QPAccountsDB")
+    conn = pymssql.connect(ServerDomain, ServerName, password, "QPAccountsDB")
     cursor = conn.cursor()
     # 新建、插入操作
     cursor.execute("""
@@ -39,3 +43,20 @@ def ConnectSql():
 
     # 关闭连接
     conn.close()
+
+#需要备份的列表
+databaseName =["QPAccountsDB","QPNativeWebDB","QPPlatformDB","QPPlatformManagerDB","QPRecordDB","QPTreasureDB"]
+
+def backupSql():
+    nowtime = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime(time.time())) + ""
+
+    con = pymssql.connect(host=ServerDomain, port=port_, user=ServerName, password=password_, database='QPAccountsDB')
+    con.autocommit(True)
+    cur = con.cursor()
+    sql = "backup database QPAccountsDB to disk='F:/QPAccountsDB" + nowtime + ".bak'"
+    for i in range(len(databaseName)):
+        sql = "backup database "+databaseName[i]+ " to disk='F:/"+ databaseName[i]+ nowtime + ".bak'"
+        #print(sql)
+        cur.execute(sql)
+    con.autocommit(False)
+    cur.close()
